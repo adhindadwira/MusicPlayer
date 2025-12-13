@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>User Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6fa;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #4c50ff;
+        }
+
+        .logout {
+            display: inline-block;
+            margin-top: 20px;
+            background: #ff6767;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .logout:hover {
+            background: #ff4242;
+        }
+
+        #song-info {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .song-list {
+            margin-top: 30px;
+        }
+
+        .song-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .song-item:hover {
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, {{ username }} 🎵</h1>
+        <p>You are logged in as <strong>User</strong>.</p>
+
+        <div id="song-info">No song playing yet.</div>
+        <audio id="player" controls></audio>
+
+        <div class="song-list" id="song-list">
+            <!-- Daftar lagu akan dimuat lewat API -->
+        </div>
+
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+
+    <script>
+    const player = document.getElementById('player');
+    const songInfo = document.getElementById('song-info');
+    const songListDiv = document.getElementById('song-list');
+    let currentSongId = null;
+
+    // Ambil daftar lagu dari API
+    async function loadSongs() {
+        const res = await fetch('/api/songs');
+        const data = await res.json();
+        songListDiv.innerHTML = '';
+        data.songs.forEach(song => {
+            const div = document.createElement('div');
+            div.className = 'song-item';
+            div.innerText = `${song.title} - ${song.artist} (${song.genre})`;
+            div.onclick = () => playSong(song.id);
+            songListDiv.appendChild(div);
+        });
+    }
+
+    // Fungsi untuk memutar lagu
+    async function playSong(songId) {
+        const res = await fetch(`/api/songs/${songId}`);
+        const song = await res.json();
+        if (song.audio_path) {
+            player.src = song.audio_path;
+            player.play();
+            currentSongId = song.id;
+            songInfo.innerText = `Now Playing: ${song.title} - ${song.artist}`;
+        }
+    }
+
+    // Auto-play rekomendasi saat lagu selesai
+    player.onended = async () => {
+        if (currentSongId) {
+            const recRes = await fetch(`/api/play_next/${currentSongId}`);
+            const recData = await recRes.json();
+            if (recData.song) {
+                playSong(recData.song.id);
+            } else {
+                songInfo.innerText = "No recommendations found.";
+            }
+        }
+    };
+
+    // Load daftar lagu saat halaman dibuka
+    loadSongs();
+    </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff2f7;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #ff3b77;
+        }
+
+        .logout {
+            display: inline-block;
+            margin-top: 20px;
+            background: #ff6767;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .logout:hover {
+            background: #ff4242;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel 🔧</h1>
+        <p>Welcome, <strong>{{ username }}</strong>.</p>
+
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</body>
+</html>
