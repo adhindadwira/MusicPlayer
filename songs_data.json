@@ -1,0 +1,29 @@
+[
+    {
+        "id": 1,
+        "title": "Autumn",
+        "artist": "NIKI",
+        "duration": 210,
+        "genre": "Pop",
+        "audio_path": "/uploads/audio/1765868568.680642_NIKI_-_Autumn_Official_Lyric_Video_toHJ3yp4TY8.mp3",
+        "cover_path": "/uploads/covers/1765868568.7017_autumn_niki.jpg"
+    },
+    {
+        "id": 2,
+        "title": "you!",
+        "artist": "LANY",
+        "duration": 200,
+        "genre": "Pop",
+        "audio_path": "/uploads/audio/1765868600.476708_v4.www-y2mate.blog_-_LANY_-_you_official_video_192_KBps.mp3",
+        "cover_path": "/uploads/covers/1765868600.516549_you_lany.jpg"
+    },
+    {
+        "id": 3,
+        "title": "Buzz",
+        "artist": "NIKI",
+        "duration": 215,
+        "genre": "Pop",
+        "audio_path": "/uploads/audio/1765870168.052159_NIKI_-_Buzz_Official_Lyric_Video_xQYMsSEdpsY_1.mp3",
+        "cover_path": "/uploads/covers/1765870168.086941_Screenshot_2025-12-11_144704.png"
+    }
+]
