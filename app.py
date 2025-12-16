@@ -265,33 +265,35 @@ def load_songs():
 # Load saat start
 load_songs()
 
+# Jika tidak ada lagu yang berhasil dimuat, isi dengan sample songs
+if not songs_library:
+    songs_library = [
+        {
+            'id': 1,
+            'title': 'Sample Song 1',
+            'artist': 'Sample Artist',
+            'duration': 180,
+            'genre': 'Pop',
+            'audio_path': None,
+            'cover_path': None
+        },
+        {
+            'id': 2,
+            'title': 'Sample Song 2',
+            'artist': 'Sample Artist',
+            'duration': 200,
+            'genre': 'Rock',
+            'audio_path': None,
+            'cover_path': None
+        }
+    ]
+
 # Demo users
 users = {
     'user': {'password': 'user123', 'role': 'user'},
     'admin': {'password': 'admin123', 'role': 'admin'}
 }
 
-# Sample songs dengan placeholder (akan diganti saat admin upload)
-songs_library = [
-    {
-        'id': 1,
-        'title': 'Sample Song 1',
-        'artist': 'Sample Artist',
-        'duration': 180,
-        'genre': 'Pop',
-        'audio_path': None,
-        'cover_path': None
-    },
-    {
-        'id': 2,
-        'title': 'Sample Song 2',
-        'artist': 'Sample Artist',
-        'duration': 200,
-        'genre': 'Rock',
-        'audio_path': None,
-        'cover_path': None
-    }
-]
 
 # Build BST
 for song in songs_library:
