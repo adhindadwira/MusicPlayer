@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Player - User</title>
+<style>
+/* Reset */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* Dark mode palette */
+:root {
+  --bg: #121212;
+  --bg-soft: #181818;
+  --card: #1e1e1e;
+  --text: #e0e0e0;
+  --text-dim: #aaaaaa;
+  --border: #2a2a2a;
+  --accent: #1DB954; /* Spotify green */
+  --accent-dark: #19a64a;
+  --danger: #ff4757;
+  --purple: #6b21a8;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+  color: var(--text);
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background: var(--bg-soft);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+}
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--accent);
+}
+.menu-item {
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  color: var(--text);
+  background: transparent;
+}
+.menu-item:hover, .menu-item.active {
+  background: var(--card);
+  color: var(--text);
+  transform: translateX(5px);
+  border: 1px solid var(--border);
+}
+.logout-btn {
+  margin-top: auto;
+  padding: 12px 20px;
+  background: var(--danger);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.2s, opacity 0.2s;
+  opacity: 0.9;
+}
+.logout-btn:hover { transform: scale(1.05); opacity: 1; }
+
+/* Main content */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  background: var(--bg-soft);
+  padding: 20px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+.search-bar {
+  flex: 1;
+  max-width: 500px;
+  position: relative;
+}
+.search-bar input {
+  width: 100%;
+  padding: 12px 20px;
+  border: 1px solid var(--border);
+  border-radius: 25px;
+  font-size: 14px;
+  transition: border 0.3s, background 0.3s;
+  background: var(--card);
+  color: var(--text);
+}
+.search-bar input::placeholder { color: var(--text-dim); }
+.search-bar input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: #222;
+}
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Content area */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px;
+  background: var(--bg);
+}
+.section-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+
+/* Home: Recommendations (small song cards) */
+.recs-strip { margin-bottom: 24px; }
+.recs-title { font-size: 22px; color: var(--text); margin-bottom: 12px; }
+.recs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+/* Home: Albums (big album cards) */
+.albums-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+}
+.album-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  cursor: pointer;
+  transition: transform 0.18s, border-color 0.18s;
+}
+.album-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+.album-cover {
+  width: 100%;
+  height: 180px;
+  border-radius: 10px;
+  overflow: hidden;
+  display:flex;align-items:center;justify-content:center;
+  background:#222;color:var(--text-dim);
+  font-size:20px;
+  margin-bottom:10px;
+}
+.album-cover img { width:100%; height:100%; object-fit:cover; }
+.album-title { font-size:18px; font-weight:700; color:var(--text); margin-bottom:6px; }
+.album-meta { font-size:14px; color:var(--text-dim); }
+
+/* General songs grid (used outside home) - small song cards */
+.songs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 30px;
+}
+.song-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.song-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+}
+.song-cover {
+  width: 100%;
+  height: 140px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  background: #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  font-size: 22px;
+}
+.song-cover img { width: 100%; height: 100%; object-fit: cover; }
+.song-info { margin-bottom: 10px; }
+.song-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+.song-artist { font-size: 13px; color: var(--text-dim); }
+
+/* Action buttons */
+.song-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; transition: transform 0.2s, background 0.2s, opacity 0.2s; opacity: 0.95; }
+.btn:hover { transform: scale(1.04); opacity: 1; }
+.btn-play { background: var(--accent); color: white; flex: 1; }
+.btn-favorite { background: #b91c1c; color: white; }
+.btn-favorite.active { background: #ef4444; }
+.btn-queue { background: var(--purple); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-secondary { background: var(--bg-soft); color: var(--text); border: 1px solid var(--border); }
+.clear-queue-btn { padding: 12px 24px; font-size: 14px; background: var(--danger); color: white; border-radius: 10px; border: none; cursor: pointer; }
+
+/* Player */
+.player {
+  background: var(--bg-soft);
+  padding: 20px 30px;
+  display: flex; align-items: center; gap: 20px;
+  border-top: 1px solid var(--border);
+}
+.player-cover {
+  width: 60px; height: 60px; border-radius: 10px; background: #222;
+  display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--text-dim); flex-shrink: 0; overflow: hidden;
+}
+.player-cover img { width: 100%; height: 100%; object-fit: cover; }
+.player-info { flex: 1; min-width: 0; }
+.player-title { font-weight: bold; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+.player-artist { font-size: 12px; color: var(--text-dim); }
+.player-controls { display: flex; align-items: center; gap: 15px; }
+.control-btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--accent); color: white; cursor: pointer; font-size: 18px; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; }
+.control-btn:hover { transform: scale(1.08); }
+.control-btn.play-pause { width: 55px; height: 55px; font-size: 22px; }
+.player-progress { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.progress-bar { width: 100%; height: 8px; background: #2a2a2a; border-radius: 10px; cursor: pointer; position: relative; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent) 0%, var(--accent-dark) 100%); border-radius: 10px; position: relative; transition: width 0.1s linear; }
+.progress-dot { position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; background: white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+.time-display { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+.empty-state-icon { font-size: 48px; margin-bottom: 20px; }
+.empty-state-text { font-size: 18px; opacity: 0.9; }
+
+/* Hidden audio element */
+#audioPlayer { display: none; }
+
+/* Modals */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
+.modal.active { display: flex; }
+.modal-content { background: var(--bg-soft); color: var(--text);
+  padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-title { font-size: 24px; color: var(--accent); }
+.close-btn { background: none; border: none; font-size: 30px; cursor: pointer; color: var(--text-dim); }
+.close-btn:hover { color: var(--text); }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text); }
+.form-group input {
+  width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; transition: border 0.3s; background: var(--card); color: var(--text);
+}
+.form-group input:focus { outline: none; border-color: var(--accent); }
+.playlist-list { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; }
+.playlist-item { padding: 15px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; color: var(--text); }
+.playlist-item:hover { border-color: var(--accent); transform: translateX(3px); }
+.btn-icon { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 12px; background: var(--bg-soft); color: var(--text); }
+.btn-icon:hover { border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- Hidden Audio Element -->
+<audio id="audioPlayer"></audio>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="logo">Music Player</div>
+  <div class="menu-item active" onclick="showSection('home')">Home</div>
+  <div class="menu-item" onclick="showSection('library')">Library</div>
+  <div class="menu-item" onclick="showSection('favorites')">Favorites</div>
+  <div class="menu-item" onclick="showSection('playlists')">Playlists</div>
+  <div class="menu-item" onclick="showSection('queue')">Queue</div>
+  <div class="menu-item" onclick="showSection('history')">History</div>
+  <button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+  <!-- Header -->
+  <div class="header">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search songs or artists..." onkeyup="searchSongs()">
+    </div>
+    <div class="user-info">
+      {{ username }}
+    </div>
+  </div>
+
+  <!-- Content Area -->
+  <div class="content" id="contentArea">
+    <div class="section-title">Home</div>
+
+    <!-- Home: Recommendations strip (songs small cards) -->
+    <div id="homeRecommendations" class="recs-strip" style="display:none;">
+      <div class="recs-title">Rekomendasi Lagu 🎶</div>
+      <div class="recs-grid" id="recsGrid">
+        <div class="empty-state">
+          <div class="empty-state-icon">⏳</div>
+          <div class="empty-state-text">Memuat rekomendasi...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Home: Albums strip (albums big cards) -->
+    <div id="homeAlbums" class="recs-strip" style="display:none; margin-bottom: 18px;">
+      <div class="recs-title">Album</div>
+      <div class="albums-grid" id="albumsGrid">
+        <div class="empty-state">
+          <div class="empty-state-icon">💿</div>
+          <div class="empty-state-text">Memuat album...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Library: Stats -->
+    <div id="libraryStats" style="display:none;">
+      <div class="recs-title">Statistik Library 📊</div>
+      <div class="recs-grid" id="statsGrid"></div>
+    </div>
+
+    <!-- General songs grid (used in other sections) -->
+    <div class="songs-grid" id="songsGrid">
+      <div class="empty-state">
+        <div class="empty-state-icon">⏳</div>
+        <div class="empty-state-text">Loading songs...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Player -->
+  <div class="player">
+    <div class="player-cover" id="playerCover">♪</div>
+    <div class="player-info">
+      <div class="player-title" id="playerTitle">No song playing</div>
+      <div class="player-artist" id="playerArtist">Select a song to play</div>
+    </div>
+    <div class="player-controls">
+      <button class="control-btn" onclick="previousSong()">⏮</button>
+      <button class="control-btn play-pause" id="playPauseBtn" onclick="togglePlayPause()">▶</button>
+      <button class="control-btn" onclick="nextSong()">⏭</button>
+    </div>
+    <div class="player-progress">
+      <div class="progress-bar" onclick="seekAudio(event)">
+        <div class="progress-fill" id="progressFill">
+          <div class="progress-dot"></div>
+        </div>
+      </div>
+      <div class="time-display">
+        <span id="currentTime">0:00</span>
+        <span id="totalTime">0:00</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Playlist Modal -->
+<div class="modal" id="playlistModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Add to Playlist</h2>
+      <button class="close-btn" onclick="closePlaylistModal()">&times;</button>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-play" onclick="openCreatePlaylistForm()" style="width: 100%;">Create New Playlist</button>
+    </div>
+    <div class="playlist-list" id="playlistList">
+      <div style="text-align: center; padding: 20px; color: var(--text-dim);">Loading playlists...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Playlist Modal -->
+<div class="modal" id="createPlaylistModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Create New Playlist</h2>
+      <button class="close-btn" onclick="closeCreatePlaylistModal()">&times;</button>
+    </div>
+    <form id="createPlaylistForm" onsubmit="createPlaylist(event)">
+      <div class="form-group">
+        <label for="playlistName">Playlist Name</label>
+        <input type="text" id="playlistName" placeholder="My Awesome Playlist" required>
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" class="btn btn-secondary" onclick="closeCreatePlaylistModal()">Cancel</button>
+        <button type="submit" class="btn btn-play">Create</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Global variables
+let allSongs = [];
+let favorites = [];
+let queue = [];
+let history = [];
+let playlists = [];
+let currentSong = null;
+let isPlaying = false;
+let currentSection = 'home';
+let selectedSongForPlaylist = null;
+
+const audioPlayer = document.getElementById('audioPlayer');
+
+// Load initial data
+document.addEventListener('DOMContentLoaded', () => {
+  loadSongs();
+  loadFavorites();
+  loadQueue();
+  loadHistory();
+  loadPlaylists();
+  setupAudioListeners();
+
+  loadRecommendations();   // Home: rekomendasi lagu
+  loadLibraryStats();      // Library stats
+
+  // Auto refresh every 5 seconds
+  setInterval(() => {
+  if (currentSection === 'home') {
+    loadRecommendations();
+    displayAlbums(aggregateAlbums(allSongs));
+  } else if (currentSection === 'library') {
+    loadLibraryStats();
+  }
+}, 5000);
+});
+
+function logout() { window.location.href = '/logout'; }
+
+// Setup audio listeners
+function setupAudioListeners() {
+  audioPlayer.addEventListener('timeupdate', updateProgress);
+  audioPlayer.addEventListener('ended', onSongEnded);
+  audioPlayer.addEventListener('loadedmetadata', onAudioLoaded);
+  audioPlayer.addEventListener('error', onAudioError);
+  audioPlayer.addEventListener('play', () => {
+    isPlaying = true; document.getElementById('playPauseBtn').textContent = '⏸';
+  });
+  audioPlayer.addEventListener('pause', () => {
+    isPlaying = false; document.getElementById('playPauseBtn').textContent = '▶';
+  });
+}
+
+function onAudioLoaded() {
+  const duration = audioPlayer.duration;
+  document.getElementById('totalTime').textContent = formatTime(duration);
+}
+function onAudioError(e) {
+  console.error('Audio error:', e);
+  alert('Error playing audio. The file may be missing or corrupted.');
+  isPlaying = false;
+  document.getElementById('playPauseBtn').textContent = '▶';
+}
+function updateProgress() {
+  if (!audioPlayer.duration) return;
+  const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+  document.getElementById('progressFill').style.width = progress + '%';
+  document.getElementById('currentTime').textContent = formatTime(audioPlayer.currentTime);
+}
+function seekAudio(event) {
+  if (!audioPlayer.duration) return;
+  const rect = event.currentTarget.getBoundingClientRect();
+  const percent = (event.clientX - rect.left) / rect.width;
+  audioPlayer.currentTime = percent * audioPlayer.duration;
+}
+function onSongEnded() { nextSong(); }
+function formatTime(seconds) {
+  if (!seconds || isNaN(seconds)) return '0:00';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Load songs
+async function loadSongs() {
+  try {
+    const response = await fetch('/api/songs', { credentials: 'include' });
+    const data = await response.json();
+    const newSongs = data.songs || [];
+
+    // Bandingkan dengan allSongs sebelumnya
+    if (JSON.stringify(newSongs) !== JSON.stringify(allSongs)) {
+      allSongs = newSongs;
+      if (currentSection === 'home') {
+        displayAlbums(aggregateAlbums(allSongs));
+      } else if (['favorites', 'queue', 'history'].includes(currentSection)) {
+        displaySongs(allSongs);
+      }
+    }
+  } catch (error) {
+    console.error('Error loading songs:', error);
+  }
+}
+
+
+// Load favorites
+async function loadFavorites() {
+  try {
+    const response = await fetch('/api/favorites', { credentials: 'include' });
+    if (!response.ok) throw new Error('Failed to load favorites');
+    const data = await response.json();
+    favorites = data.favorites || [];
+    if (currentSection === 'favorites') displaySongs(favorites);
+  } catch (error) { console.error('Error loading favorites:', error); }
+}
+
+// Load queue
+async function loadQueue() {
+  try {
+    const response = await fetch('/api/queue', { credentials: 'include' });
+    if (!response.ok) throw new Error('Failed to load queue');
+    const data = await response.json();
+    queue = data.queue || [];
+    if (currentSection === 'queue') displaySongs(queue);
+  } catch (error) { console.error('Error loading queue:', error); }
+}
+
+// Load history
+async function loadHistory() {
+  try {
+    const response = await fetch('/api/history', { credentials: 'include' });
+    if (!response.ok) throw new Error('Failed to load history');
+    const data = await response.json();
+    history = data.history || [];
+    if (currentSection === 'history') displaySongs(history);
+  } catch (error) { console.error('Error loading history:', error); }
+}
+
+// Display songs (generic list except library-only stats)
+function displaySongs(songs, playlistName = null) {
+  const grid = document.getElementById('songsGrid');
+
+  if (!songs || songs.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-text">No songs available</div>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = songs.map(song => `
+    <div class="song-card">
+      <div class="song-cover">
+        ${song.cover_path ? `<img src="${song.cover_path}">` : '♪'}
+      </div>
+      <div class="song-info">
+        <div class="song-title">${song.title}</div>
+        <div class="song-artist">${song.artist}</div>
+      </div>
+      <div class="song-actions">
+        <button class="btn btn-play" onclick="playSong(${song.id})">Play</button>
+        ${playlistName ? `
+          <button class="btn btn-danger" onclick="removeSongFromPlaylist('${playlistName}', ${song.id})">Remove</button>
+        ` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+
+// Play song
+async function playSong(songId) {
+  const song = allSongs.find(s => s.id === songId) || favorites.find(s => s.id === songId) || queue.find(s => s.id === songId) || history.find(s => s.id === songId);
+  if (!song) { alert('Song not found'); return; }
+  if (!song.audio_path || song.audio_path === 'null') { alert('This song has no audio file uploaded'); return; }
+
+  currentSong = song;
+  document.getElementById('playerTitle').textContent = song.title;
+  document.getElementById('playerArtist').textContent = song.artist;
+  const playerCover = document.getElementById('playerCover');
+  playerCover.innerHTML = (song.cover_path && song.cover_path !== 'null') ? `<img src="${song.cover_path}" alt="${escapeHtml(song.title)}">` : '♪';
+
+  audioPlayer.src = song.audio_path;
+  audioPlayer.load();
+  try {
+    await audioPlayer.play();
+    await fetch(`/api/history/${songId}`, { method: 'POST', credentials: 'include' });
+    loadHistory();
+  } catch (error) {
+    console.error('Error playing song:', error);
+    alert('Failed to play audio');
+  }
+}
+function togglePlayPause() {
+  if (!currentSong) { alert('No song selected'); return; }
+  if (isPlaying) audioPlayer.pause(); else audioPlayer.play();
+}
+async function nextSong() {
+  if (queue.length > 0) {
+    const nextInQueue = queue[0];
+    await playSong(nextInQueue.id);
+    await fetch('/api/queue/next', { method: 'POST', credentials: 'include' });
+    loadQueue();
+  } else if (allSongs.length > 0) {
+    const currentIndex = allSongs.findIndex(s => s.id === currentSong?.id);
+    const nextIndex = (currentIndex + 1) % allSongs.length;
+    await playSong(allSongs[nextIndex].id);
+  }
+}
+async function previousSong() {
+  if (history.length > 1) {
+    const prevSong = history[history.length - 2];
+    await playSong(prevSong.id);
+  }
+}
+
+// Favorite
+async function toggleFavorite(songId) {
+  const isFavorite = favorites.some(f => f.id === songId);
+  const url = `/api/favorites/${songId}`;
+  const method = isFavorite ? 'DELETE' : 'POST';
+  try {
+    const response = await fetch(url, { method, credentials: 'include' });
+    if (response.ok) {
+      await loadFavorites();
+      if (currentSection === 'favorites') displaySongs(favorites);
+      else displaySongs(allSongs);
+      if (currentSection === 'library') loadLibraryStats();
+    }
+  } catch (error) { console.error('Error toggling favorite:', error); }
+}
+
+// Queue
+async function addToQueue(songId) {
+  try {
+    const response = await fetch(`/api/queue/${songId}`, { method: 'POST', credentials: 'include' });
+    if (response.ok) {
+      alert('Added to queue!');
+      loadQueue();
+    }
+  } catch (error) { console.error('Error adding to queue:', error); }
+}
+async function removeFromQueue(songId) {
+  try {
+    const response = await fetch(`/api/queue/${songId}`, { method: 'DELETE', credentials: 'include' });
+    if (response.ok) {
+      await loadQueue();
+      displaySongs(queue);
+      alert('Removed from queue!');
+    }
+  } catch (error) { console.error('Error removing from queue:', error); }
+}
+async function clearAllQueue() {
+  if (!confirm('Clear all songs from queue?')) return;
+  try {
+    const response = await fetch('/api/queue/clear', { method: 'POST', credentials: 'include' });
+    if (response.ok) {
+      await loadQueue();
+      displaySongs(queue);
+      alert('Queue cleared!');
+    }
+  } catch (error) { console.error('Error clearing queue:', error); }
+}
+
+// Section switcher
+function showSection(section) {
+  currentSection = section;
+  document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+  event.target.classList.add('active');
+
+  hideAllSections(); // sembunyikan semua dulu
+
+  const titleMap = {
+    'home': 'Home',
+    'library': 'Library',
+    'favorites': 'Favorites',
+    'playlists': 'My Playlists',
+    'queue': 'Queue',
+    'history': 'History'
+  };
+  document.querySelector('.section-title').textContent = titleMap[section];
+
+  if (section === 'home') {
+    document.getElementById('homeRecommendations').style.display = 'block';
+    document.getElementById('homeAlbums').style.display = 'block';
+    loadRecommendations();
+    displayAlbums(aggregateAlbums(allSongs));
+  } else if (section === 'library') {
+    document.getElementById('libraryStats').style.display = 'block';
+    loadLibraryStats();
+  } else if (section === 'favorites') {
+    document.getElementById('songsGrid').style.display = 'grid';   // ✅ tampilkan grid
+    loadFavorites().then(() => displaySongs(favorites));
+  } else if (section === 'playlists') {
+    document.getElementById('songsGrid').style.display = 'grid';   // ✅ tampilkan grid
+    displayPlaylistsView();
+  } else if (section === 'queue') {
+    document.getElementById('songsGrid').style.display = 'grid';   // ✅ tampilkan grid
+    displaySongs(queue);
+  } else if (section === 'history') {
+    document.getElementById('songsGrid').style.display = 'grid';   // ✅ tampilkan grid
+    displaySongs(history);
+  }
+}
+
+// Search
+function searchSongs() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  if (!query) {
+    if (currentSection === 'favorites') return displaySongs(favorites);
+    if (currentSection === 'queue') return displaySongs(queue);
+    if (currentSection === 'history') return displaySongs(history);
+    return displaySongs(allSongs);
+  }
+  const base = currentSection === 'favorites' ? favorites
+            : currentSection === 'queue' ? queue
+            : currentSection === 'history' ? history
+            : allSongs;
+  const filtered = base.filter(song =>
+    (song.title || '').toLowerCase().includes(query) ||
+    (song.artist || '').toLowerCase().includes(query) ||
+    (song.genre || '').toLowerCase().includes(query) ||
+    (song.album || '').toLowerCase().includes(query)
+  );
+  displaySongs(filtered);
+}
+
+// === PLAYLIST FUNCTIONS ===
+async function loadPlaylists() {
+  try {
+    const response = await fetch('/api/playlists', { credentials: 'include' });
+    if (!response.ok) throw new Error('Failed to load playlists');
+    const data = await response.json();
+    playlists = data.playlists || [];
+    if (currentSection === 'playlists') displayPlaylistsView();
+  } catch (error) { console.error('Error loading playlists:', error); }
+}
+function openPlaylistModal(songId) {
+  selectedSongForPlaylist = songId;
+  document.getElementById('playlistModal').classList.add('active');
+  displayPlaylists();
+}
+function closePlaylistModal() {
+  document.getElementById('playlistModal').classList.remove('active');
+  selectedSongForPlaylist = null;
+}
+function displayPlaylists() {
+  const listEl = document.getElementById('playlistList');
+  if (!playlists || playlists.length === 0) {
+    listEl.innerHTML = `
+      <div style="text-align: center; padding: 20px; color: var(--text-dim);">
+        No playlists yet. Create one!
+      </div>
+    `;
+    return;
+  }
+  listEl.innerHTML = playlists.map(playlist => `
+    <div class="playlist-item" onclick="addSongToPlaylist('${playlist.name}')">
+      <div class="playlist-info">
+        <div class="playlist-name">${escapeHtml(playlist.name)}</div>
+        <div class="playlist-count">${playlist.count} songs</div>
+      </div>
+      <div class="playlist-actions">
+        <button class="btn-icon" onclick="event.stopPropagation(); viewPlaylist('${playlist.name}')">View</button>
+        <button class="btn-icon" onclick="event.stopPropagation(); deletePlaylist('${playlist.name}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+function displayPlaylistsView() {
+  const grid = document.getElementById('songsGrid');
+  grid.style.display = 'grid';
+  if (!playlists || playlists.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📁</div>
+        <div class="empty-state-text">No playlists yet. Click "Create New Playlist" to get started!</div>
+      </div>
+      <div style="text-align: center; margin-top: 20px;">
+        <button class="btn btn-play" onclick="openCreatePlaylistModal()" style="padding: 15px 30px; font-size: 16px;">
+          Create New Playlist
+        </button>
+      </div>
+    `;
+    return;
+  }
+  grid.innerHTML = `
+    <div style="margin-bottom: 20px;">
+      <button class="btn btn-play" onclick="openCreatePlaylistModal()" style="padding: 12px 24px;">
+        Create New Playlist
+      </button>
+    </div>
+    ${playlists.map(playlist => `
+      <div class="song-card" style="cursor: pointer;" onclick="viewPlaylistFromMenu('${escapeHtml(playlist.name)}')">
+        <div class="song-cover" style="display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:48px;font-weight:bold;">
+          ${escapeHtml(playlist.name).charAt(0).toUpperCase()}
+        </div>
+        <div class="song-info">
+          <div class="song-title">${escapeHtml(playlist.name)}</div>
+          <div class="song-artist">${playlist.count} songs</div>
+        </div>
+        <div class="song-actions">
+          <button class="btn btn-play" onclick="event.stopPropagation(); viewPlaylistFromMenu('${escapeHtml(playlist.name)}')">View Playlist</button>
+          <button class="btn btn-queue" onclick="event.stopPropagation(); deletePlaylistFromMenu('${escapeHtml(playlist.name)}')">Delete</button>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+function openCreatePlaylistModal() {
+  document.getElementById('createPlaylistModal').classList.add('active');
+}
+function viewPlaylistFromMenu(playlistName) {
+  const playlist = playlists.find(p => p.name === playlistName);
+  if (!playlist) { alert('Playlist not found'); return; }
+  currentSection = 'playlist_view';
+  document.querySelector('.section-title').textContent = playlist.name;
+  displaySongs(playlist.songs, playlistName); // ✅ kirim playlistName agar tombol Remove muncul
+  document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+}
+async function deletePlaylistFromMenu(playlistName) {
+  if (!confirm(`Delete playlist "${playlistName}"?`)) return;
+  try {
+    const response = await fetch(`/api/playlists/${encodeURIComponent(playlistName)}`, { method: 'DELETE', credentials: 'include' });
+    const data = await response.json();
+    if (data.success) {
+      alert('Playlist deleted!');
+      await loadPlaylists();
+      displayPlaylistsView();
+      loadLibraryStats();
+    } else {
+      alert('Error: ' + (data.error || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error deleting playlist:', error);
+    alert('Failed to delete playlist');
+  }
+}
+function openCreatePlaylistForm() {
+  document.getElementById('playlistModal').classList.remove('active');
+  document.getElementById('createPlaylistModal').classList.add('active');
+}
+function closeCreatePlaylistModal() {
+  document.getElementById('createPlaylistModal').classList.remove('active');
+  document.getElementById('createPlaylistForm').reset();
+}
+async function createPlaylist(event) {
+  event.preventDefault();
+  const name = document.getElementById('playlistName').value.trim();
+  if (!name) { alert('Please enter a playlist name'); return; }
+  try {
+    const response = await fetch('/api/playlists', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ name })
+    });
+    const data = await response.json();
+    if (data.success) {
+      alert('Playlist created successfully!');
+      closeCreatePlaylistModal();
+      loadPlaylists();
+      loadLibraryStats();
+      if (selectedSongForPlaylist) {
+        setTimeout(() => { openPlaylistModal(selectedSongForPlaylist); }, 100);
+      }
+    } else {
+      alert('Error: ' + (data.error || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error creating playlist:', error);
+    alert('Failed to create playlist');
+  }
+}
+async function addSongToPlaylist(playlistName) {
+  if (!selectedSongForPlaylist) return;
+  try {
+    const response = await fetch(`/api/playlists/${encodeURIComponent(playlistName)}/songs/${selectedSongForPlaylist}`, {
+      method: 'POST', credentials: 'include'
+    });
+    const data = await response.json();
+    if (data.success) {
+      alert(`Added to "${playlistName}"!`);
+      closePlaylistModal();
+      loadPlaylists();
+    } else {
+      alert('Error: ' + (data.error || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error adding song to playlist:', error);
+    alert('Failed to add song to playlist');
+  }
+}
+
+function viewPlaylist(playlistName) {
+  const playlist = playlists.find(p => p.name === playlistName);
+  if (!playlist) { alert('Playlist not found'); return; }
+  currentSection = 'playlist';
+  document.querySelector('.section-title').textContent = `📁 ${playlistName}`;
+  displaySongs(playlist.songs, playlistName); // ← penting!
+}
+
+
+async function deletePlaylist(playlistName) {
+  if (!confirm(`Delete playlist "${playlistName}"?`)) return;
+  try {
+    const response = await fetch(`/api/playlists/${encodeURIComponent(playlistName)}`, { method: 'DELETE', credentials: 'include' });
+    const data = await response.json();
+    if (data.success) {
+      alert('Playlist deleted!');
+      loadPlaylists();
+      displayPlaylists();
+      loadLibraryStats();
+    } else {
+      alert('Error: ' + (data.error || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error deleting playlist:', error);
+    alert('Failed to delete playlist');
+  }
+}
+
+async function removeSongFromPlaylist(playlistName, songId) {
+  try {
+    const response = await fetch(`/api/playlists/${encodeURIComponent(playlistName)}/songs/${songId}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    const data = await response.json();
+    if (data.success) {
+      alert('Song removed from playlist!');
+      await loadPlaylists(); // refresh daftar playlist
+      viewPlaylistFromMenu(playlistName);
+    } else {
+      alert('Error: ' + (data.error || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error removing song from playlist:', error);
+    alert('Failed to remove song');
+  }
+}
+
+
+// === Home recommendations ===
+async function loadRecommendations() {
+  try {
+    const songsResp = await fetch('/api/songs', { credentials: 'include' });
+    const songsData = await songsResp.json();
+    const songs = songsData.songs || [];
+    const recsStrip = document.getElementById('homeRecommendations');
+    const recsGrid = document.getElementById('recsGrid');
+
+    if (!songs.length) {
+      recsStrip.style.display = 'none';
+      return;
+    }
+
+    // Aggregate recommendations dari 5 lagu awal
+    const seedCount = Math.min(5, songs.length);
+    const recMap = new Map(); // id -> song
+    for (let i = 0; i < seedCount; i++) {
+      const seed = songs[i];
+      // tambahkan seed sendiri agar selalu muncul
+      if (!recMap.has(seed.id)) recMap.set(seed.id, seed);
+
+      const r = await fetch(`/api/recommendations/${seed.id}`, { credentials: 'include' });
+      const rdata = await r.json();
+      (rdata.recommendations || []).forEach(s => {
+        if (!recMap.has(s.id)) recMap.set(s.id, s);
+      });
+    }
+
+    const recList = Array.from(recMap.values()).slice(0, 12);
+
+    // kalau rekomendasi kosong, fallback ke semua lagu
+    const finalList = recList.length ? recList : songs;
+
+    recsGrid.innerHTML = finalList.map(song => `
+      <div class="song-card">
+        <div class="song-cover">
+          ${song.cover_path && song.cover_path !== 'null'
+            ? `<img src="${song.cover_path}" alt="${escapeHtml(song.title)}">`
+            : '♪'}
+        </div>
+        <div class="song-info">
+          <div class="song-title">${escapeHtml(song.title)}</div>
+          <div class="song-artist">
+            ${escapeHtml(song.artist)}
+            ${song.genre ? ` • ${escapeHtml(song.genre)}` : ''}
+            ${song.album ? ` • ${escapeHtml(song.album)}` : ' • Single / Unknown Album'}
+          </div>
+        </div>
+        <div class="song-actions">
+          <button class="btn btn-play" onclick="playSong(${song.id})"
+            ${!song.audio_path || song.audio_path === 'null' ? 'disabled' : ''}>
+            ${song.audio_path && song.audio_path !== 'null' ? 'Play' : 'No Audio'}
+          </button>
+          <button class="btn btn-favorite ${favorites.some(f => f.id === song.id) ? 'active' : ''}"
+            onclick="toggleFavorite(${song.id})">
+            ${favorites.some(f => f.id === song.id) ? 'Favorited' : 'Favorite'}
+          </button>
+          <button class="btn btn-queue" onclick="addToQueue(${song.id})">Add Queue</button>
+          <button class="btn btn-secondary" onclick="openPlaylistModal(${song.id})">Add Playlist</button>
+        </div>
+      </div>
+    `).join('');
+
+    recsStrip.style.display = 'block';
+  } catch (e) {
+    console.error('Error loading recommendations:', e);
+  }
+}
+
+
+// === Albums helpers ===
+function aggregateAlbums(songs) {
+  const map = new Map();
+  (songs || []).forEach(s => {
+    const name = (s.album || '').trim();
+    if (!name) return; // ✅ skip lagu tanpa album
+    if (!map.has(name)) {
+      map.set(name, {
+        name,
+        cover: s.cover_path || null,
+        count: 1
+      });
+    } else {
+      map.get(name).count += 1;
+    }
+  });
+  return Array.from(map.values());
+}
+
+function displayAlbums(albums) {
+  const grid = document.getElementById('albumsGrid');
+  if (!albums || albums.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-text">Tidak ada album tersedia</div>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = albums.map(a => `
+    <div class="album-card" onclick="viewAlbum('${escapeHtml(a.name)}')">
+      <div class="album-cover">
+        ${a.cover ? `<img src="${a.cover}" alt="${escapeHtml(a.name)}">` : '💿'}
+      </div>
+      <div class="album-title">${escapeHtml(a.name)}</div>
+      <div class="album-meta">${a.count} lagu</div>
+    </div>
+  `).join('');
+}
+function viewAlbum(albumName) {
+  if (!albumName) return;
+  const filtered = allSongs.filter(s => (s.album || '').trim() === albumName);
+  if (!filtered.length) { alert('Album kosong atau tidak ditemukan'); return; }
+  currentSection = 'album_view';
+  document.querySelector('.section-title').textContent = `Album: ${albumName}`;
+  document.getElementById('homeRecommendations').style.display = 'none';
+  document.getElementById('homeAlbums').style.display = 'none';
+  displaySongs(filtered);
+  const grid = document.getElementById('songsGrid');
+  const backBtn = document.createElement('div');
+  backBtn.style.marginBottom = '12px';
+  backBtn.innerHTML = `<button class="btn btn-secondary" onclick="clearAlbumView()">Back to Home</button>`;
+  grid.prepend(backBtn);
+}
+function clearAlbumView() {
+  currentSection = 'home';
+  document.querySelector('.section-title').textContent = 'Home';
+  document.getElementById('homeRecommendations').style.display = 'block';
+  document.getElementById('homeAlbums').style.display = 'block';
+  displaySongs(allSongs);
+}
+
+// Utility: escape HTML
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"'`]/g, function (s) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' })[s];
+  });
+}
+
+function hideAllSections() {
+  document.getElementById('homeRecommendations').style.display = 'none';
+  document.getElementById('homeAlbums').style.display = 'none';
+  document.getElementById('libraryStats').style.display = 'none';
+  document.getElementById('songsGrid').style.display = 'none';
+}
+
+
+// === Library stats ===
+async function loadLibraryStats() {
+  try {
+    const favRes = await fetch('/api/favorites', { credentials: 'include' });
+    const favData = await favRes.json();
+    const plRes = await fetch('/api/playlists', { credentials: 'include' });
+    const plData = await plRes.json();
+    const songRes = await fetch('/api/songs', { credentials: 'include' });
+    const songData = await songRes.json();
+    const statsGrid = document.getElementById('statsGrid');
+
+    statsGrid.innerHTML = `
+      <div class="song-card">
+        <div class="song-info">
+          <div class="song-title">Favorite Songs</div>
+          <div class="song-artist" style="font-size:32px;color:var(--accent);">${(favData.favorites || []).length}</div>
+        </div>
+      </div>
+      <div class="song-card">
+        <div class="song-info">
+          <div class="song-title">Playlists</div>
+          <div class="song-artist" style="font-size:32px;color:var(--accent);">${(plData.playlists || []).length}</div>
+        </div>
+      </div>
+      <div class="song-card">
+        <div class="song-info">
+          <div class="song-title">Total Songs</div>
+          <div class="song-artist" style="font-size:32px;color:var(--accent);">${(songData.songs || []).length}</div>
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    console.error('Error loading library stats:', e);
+  }
+}
+</script>
+
+</body>
+</html>

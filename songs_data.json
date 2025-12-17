@@ -1,0 +1,99 @@
+[
+    {
+        "id": 2,
+        "title": "you!",
+        "artist": "LANY",
+        "duration": 200,
+        "genre": "Pop",
+        "audio_path": "/uploads/audio/1765868600.476708_v4.www-y2mate.blog_-_LANY_-_you_official_video_192_KBps.mp3",
+        "cover_path": "/uploads/covers/1765868600.516549_you_lany.jpg"
+    },
+    {
+        "id": 3,
+        "title": "Buzz",
+        "artist": "NIKI",
+        "duration": 215,
+        "genre": "Pop",
+        "audio_path": "/uploads/audio/1765870168.052159_NIKI_-_Buzz_Official_Lyric_Video_xQYMsSEdpsY_1.mp3",
+        "cover_path": "/uploads/covers/1765870168.086941_Screenshot_2025-12-11_144704.png",
+        "album": "Buzz"
+    },
+    {
+        "id": 4,
+        "title": "'Cause You Have To",
+        "artist": "LANY",
+        "duration": 243,
+        "genre": "Pop",
+        "audio_path": "/uploads/audio/1765870496.550488_v4.www-y2mate.blog_-_LANY_-_Cause_You_Have_To_Official_Lyric_Video_192_KBps.mp3",
+        "cover_path": "/uploads/covers/1765870496.58775_cause_you_have_to_lany.jpg"
+    },
+    {
+        "id": 5,
+        "title": "FaSHioN",
+        "artist": "CORTIS",
+        "duration": 223,
+        "genre": "Pop",
+        "audio_path": "/uploads/audio/1765906183.476948_CORTIS_-_FaSHioN.mp3",
+        "cover_path": "/uploads/covers/1765906183.488134_fashion_cortis.jpg"
+    },
+    {
+        "id": 6,
+        "title": "Sepatu",
+        "artist": "Tulus",
+        "duration": 221,
+        "genre": "Jazz",
+        "album": "Gajah",
+        "audio_path": "/uploads/audio/1765950590.235906_v4.www-y2mate.blog_-_TULUS_-_Sepatu_Official_Music_Video_128_KBps.mp3",
+        "cover_path": "/uploads/covers/1765950590.244033_sepatu_tulus.jpg"
+    },
+    {
+        "id": 7,
+        "title": "Autumn",
+        "artist": "NIKI",
+        "duration": 213,
+        "genre": "Pop",
+        "album": "Nicole",
+        "audio_path": "/uploads/audio/1765952042.419748_NIKI_-_Autumn_Official_Lyric_Video_toHJ3yp4TY8.mp3",
+        "cover_path": "/uploads/covers/1765952042.426826_autumn_niki.jpg"
+    },
+    {
+        "id": 8,
+        "title": "C'mon c'mon ",
+        "artist": "One Direction",
+        "duration": 216,
+        "genre": "Pop",
+        "album": "Take Me Home",
+        "audio_path": "/uploads/audio/1765958237.033709_v4.www-y2mate.blog_-_One_Direction_-_C_mon_C_mon_128_KBps.mp3",
+        "cover_path": "/uploads/covers/1765958237.041358_cmon_1D.jpg"
+    },
+    {
+        "id": 9,
+        "title": "Over Again",
+        "artist": "One Direction",
+        "duration": 220,
+        "genre": "Pop",
+        "album": "Take Me Home",
+        "audio_path": "/uploads/audio/1765958309.13094_v4.www-y2mate.blog_-_One_Direction_-_Over_Again_128_KBps.mp3",
+        "cover_path": "/uploads/covers/1765958309.143848_cmon_1D.jpg"
+    },
+    {
+        "id": 10,
+        "title": "Bring Me To Life",
+        "artist": "Evanescence",
+        "duration": 218,
+        "genre": "Rock",
+        "album": "",
+        "audio_path": "/uploads/audio/1765958875.970003_Evanescence_-_Bring_Me_To_Life.mp3",
+        "cover_path": "/uploads/covers/1765958876.022081_bring_me_to_life.jpg"
+    },
+    {
+        "id": 11,
+        "title": "Disechanted",
+        "artist": "My Chemical Romance ",
+        "duration": 230,
+        "genre": "Rock",
+        "album": "",
+        "audio_path": "/uploads/audio/1765958938.371853_My_Chemical_Romance_-_Disenchanted.mp3",
+        "cover_path": "/uploads/covers/1765958938.433513_mcr.jpg"
+    }
+]
