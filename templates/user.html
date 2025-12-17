@@ -330,7 +330,7 @@ body {
     </div>
 
     <!-- Home: Albums strip (albums big cards) -->
-    <div id="homeAlbums" class="recs-strip" style="display:none; margin-bottom: 18px;">
+    <div id="homeAlbums" class="recs-strip" style="margin-bottom: 18px;">
       <div class="recs-title">Album</div>
       <div class="albums-grid" id="albumsGrid">
         <div class="empty-state">
@@ -704,46 +704,66 @@ function showSection(section) {
   if (section === 'home') {
     document.getElementById('homeRecommendations').style.display = 'block';
     document.getElementById('homeAlbums').style.display = 'block';
-    loadRecommendations();
+    
+    // ✅ Tampilkan albums langsung dari allSongs yang sudah dimuat
     displayAlbums(aggregateAlbums(allSongs));
+    loadRecommendations();
+    
   } else if (section === 'library') {
     document.getElementById('libraryStats').style.display = 'block';
     loadLibraryStats();
   } else if (section === 'favorites') {
-    document.getElementById('songsGrid').style.display = 'grid';   // ✅ tampilkan grid
+    document.getElementById('songsGrid').style.display = 'grid';
     loadFavorites().then(() => displaySongs(favorites));
   } else if (section === 'playlists') {
-    document.getElementById('songsGrid').style.display = 'grid';   // ✅ tampilkan grid
+    document.getElementById('songsGrid').style.display = 'grid';
     displayPlaylistsView();
   } else if (section === 'queue') {
-    document.getElementById('songsGrid').style.display = 'grid';   // ✅ tampilkan grid
+    document.getElementById('songsGrid').style.display = 'grid';
     displaySongs(queue);
   } else if (section === 'history') {
-    document.getElementById('songsGrid').style.display = 'grid';   // ✅ tampilkan grid
+    document.getElementById('songsGrid').style.display = 'grid';
     displaySongs(history);
   }
 }
 
-// Search
-function searchSongs() {
-  const query = document.getElementById('searchInput').value.toLowerCase();
+// === PERBAIKAN SEARCH ===
+async function searchSongs() {
+  const query = document.getElementById('searchInput').value.trim();
+
+  // Jika input kosong, tampilkan sesuai section
   if (!query) {
     if (currentSection === 'favorites') return displaySongs(favorites);
     if (currentSection === 'queue') return displaySongs(queue);
     if (currentSection === 'history') return displaySongs(history);
     return displaySongs(allSongs);
   }
-  const base = currentSection === 'favorites' ? favorites
-            : currentSection === 'queue' ? queue
-            : currentSection === 'history' ? history
-            : allSongs;
-  const filtered = base.filter(song =>
-    (song.title || '').toLowerCase().includes(query) ||
-    (song.artist || '').toLowerCase().includes(query) ||
-    (song.genre || '').toLowerCase().includes(query) ||
-    (song.album || '').toLowerCase().includes(query)
-  );
-  displaySongs(filtered);
+
+  try {
+    // Panggil endpoint backend /api/search
+    const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, { credentials: 'include' });
+    if (!response.ok) throw new Error(`Search failed: ${response.status}`);
+
+    const data = await response.json();
+    // Tampilkan hasil pencarian dari backend
+    displaySongs(data.results || []);
+  } catch (error) {
+    console.error('Search error:', error);
+    // Fallback: filter lokal jika backend gagal
+    const base = currentSection === 'favorites' ? favorites
+              : currentSection === 'queue' ? queue
+              : currentSection === 'history' ? history
+              : allSongs;
+
+    const filtered = base.filter(song =>
+      (song.title || '').toLowerCase().includes(query.toLowerCase()) ||
+      (song.artist || '').toLowerCase().includes(query.toLowerCase()) ||
+      (song.genre || '').toLowerCase().includes(query.toLowerCase()) ||
+      (song.album || '').toLowerCase().includes(query.toLowerCase())
+    );
+
+    displaySongs(filtered);
+  }
 }
 
 // === PLAYLIST FUNCTIONS ===
@@ -976,12 +996,12 @@ async function loadRecommendations() {
       return;
     }
 
-    // Aggregate recommendations dari 5 lagu awal
+    // ✅ Ambil semua lagu untuk rekomendasi (termasuk tanpa album)
     const seedCount = Math.min(5, songs.length);
-    const recMap = new Map(); // id -> song
+    const recMap = new Map();
+    
     for (let i = 0; i < seedCount; i++) {
       const seed = songs[i];
-      // tambahkan seed sendiri agar selalu muncul
       if (!recMap.has(seed.id)) recMap.set(seed.id, seed);
 
       const r = await fetch(`/api/recommendations/${seed.id}`, { credentials: 'include' });
@@ -991,9 +1011,14 @@ async function loadRecommendations() {
       });
     }
 
-    const recList = Array.from(recMap.values()).slice(0, 12);
+    let recList = Array.from(recMap.values());
+    
+    // ✅ Jika rekomendasi kurang dari 12, tambahkan lagu lain (termasuk tanpa album)
+    if (recList.length < 12) {
+      const additionalSongs = songs.filter(s => !recMap.has(s.id));
+      recList = [...recList, ...additionalSongs].slice(0, 12);
+    }
 
-    // kalau rekomendasi kosong, fallback ke semua lagu
     const finalList = recList.length ? recList : songs;
 
     recsGrid.innerHTML = finalList.map(song => `
@@ -1008,7 +1033,7 @@ async function loadRecommendations() {
           <div class="song-artist">
             ${escapeHtml(song.artist)}
             ${song.genre ? ` • ${escapeHtml(song.genre)}` : ''}
-            ${song.album ? ` • ${escapeHtml(song.album)}` : ' • Single / Unknown Album'}
+            ${song.album ? ` • ${escapeHtml(song.album)}` : ' • Single'}
           </div>
         </div>
         <div class="song-actions">
@@ -1037,16 +1062,23 @@ async function loadRecommendations() {
 function aggregateAlbums(songs) {
   const map = new Map();
   (songs || []).forEach(s => {
-    const name = (s.album || '').trim();
-    if (!name) return; // ✅ skip lagu tanpa album
+    // ✅ Gunakan "Singles" untuk lagu tanpa album
+    const name = (s.album || '').trim() || 'Singles';
     if (!map.has(name)) {
       map.set(name, {
         name,
         cover: s.cover_path || null,
-        count: 1
+        count: 1,
+        songs: [s]  // ✅ Simpan referensi lagu
       });
     } else {
-      map.get(name).count += 1;
+      const album = map.get(name);
+      album.count += 1;
+      album.songs.push(s);
+      // Update cover jika belum ada
+      if (!album.cover && s.cover_path) {
+        album.cover = s.cover_path;
+      }
     }
   });
   return Array.from(map.values());
@@ -1064,31 +1096,54 @@ function displayAlbums(albums) {
     return;
   }
 
-  grid.innerHTML = albums.map(a => `
+  // ✅ Urutkan: Singles di akhir
+  const sorted = albums.sort((a, b) => {
+    if (a.name === 'Singles') return 1;
+    if (b.name === 'Singles') return -1;
+    return a.name.localeCompare(b.name);
+  });
+
+  grid.innerHTML = sorted.map(a => `
     <div class="album-card" onclick="viewAlbum('${escapeHtml(a.name)}')">
       <div class="album-cover">
-        ${a.cover ? `<img src="${a.cover}" alt="${escapeHtml(a.name)}">` : '💿'}
+        ${a.cover ? `<img src="${a.cover}" alt="${escapeHtml(a.name)}">` : 
+         (a.name === 'Singles' ? '🎵' : '💿')}
       </div>
       <div class="album-title">${escapeHtml(a.name)}</div>
       <div class="album-meta">${a.count} lagu</div>
     </div>
   `).join('');
 }
+
 function viewAlbum(albumName) {
   if (!albumName) return;
-  const filtered = allSongs.filter(s => (s.album || '').trim() === albumName);
-  if (!filtered.length) { alert('Album kosong atau tidak ditemukan'); return; }
+  
+  let filtered;
+  if (albumName === 'Singles') {
+    // ✅ Tampilkan semua lagu tanpa album
+    filtered = allSongs.filter(s => !(s.album || '').trim());
+  } else {
+    filtered = allSongs.filter(s => (s.album || '').trim() === albumName);
+  }
+  
+  if (!filtered.length) { 
+    alert('Album kosong atau tidak ditemukan'); 
+    return; 
+  }
+  
   currentSection = 'album_view';
   document.querySelector('.section-title').textContent = `Album: ${albumName}`;
   document.getElementById('homeRecommendations').style.display = 'none';
   document.getElementById('homeAlbums').style.display = 'none';
   displaySongs(filtered);
+  
   const grid = document.getElementById('songsGrid');
   const backBtn = document.createElement('div');
   backBtn.style.marginBottom = '12px';
   backBtn.innerHTML = `<button class="btn btn-secondary" onclick="clearAlbumView()">Back to Home</button>`;
   grid.prepend(backBtn);
 }
+
 function clearAlbumView() {
   currentSection = 'home';
   document.querySelector('.section-title').textContent = 'Home';
