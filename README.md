@@ -35,8 +35,8 @@ Aplikasi ini mendukung unggahan file audio dan gambar sampul secara langsung, se
 * **Sistem Edit**: Edit lagu yang telah di upload
 
 ## Manajemen Musik
-* **Upload file audio** (`mp3`, `wav`, `ogg`, `flac`, `m4a`).
-* **Upload cover image** (`jpg`, `jpeg`, `png`, `gif`, `webp`).
+* **Upload file audio** (`mp3`).
+* **Upload cover image** (`jpg`).
 * **Lagu tersimpan secara permanen di file** `songs_data.json`.
 
 
