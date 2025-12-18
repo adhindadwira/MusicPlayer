@@ -1,7 +1,3 @@
-<img width="1919" height="962" alt="image" src="https://github.com/user-attachments/assets/d2bc8763-6474-4716-8894-35017da76ea5" />
-<img width="1919" height="967" alt="image" src="https://github.com/user-attachments/assets/e7f1cb25-9c8e-4373-90cc-fb63ecd8c547" />
-<img width="1893" height="963" alt="image" src="https://github.com/user-attachments/assets/78f51827-2684-454f-9f98-af6e41b4b614" />
-
 # Music Player Web Application
 
 <div align="center">
@@ -27,7 +23,7 @@ Aplikasi ini mendukung unggahan file audio dan gambar sampul secara langsung, se
 * **Manajemen Playlist**: Membuat, melihat, dan menghapus playlist kustom
 * **Sistem Antrean (Queue)**: Menambahkan lagu ke antrean dan mengatur urutan pemutaran
 * **Favorit**: Menandai dan mengakses lagu favorit dengan cepat
-* **Browser Library**: Menjelajahi seluruh koleksi musik berdasarkan kategori
+* **Pencarian Lagu**: Menjelajahi seluruh koleksi musik berdasarkan kategori
 * **Sistem History**: Melihat riwayat lagu yang telah diputar
 
 ### Untuk Admin
