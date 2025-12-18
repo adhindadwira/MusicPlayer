@@ -19,7 +19,7 @@ Aplikasi ini mendukung unggahan file audio dan gambar sampul secara langsung, se
 
 ### Untuk User
 
-* **Pemutaran Audio**: Pemutar audio berbasis HTML5 dengan kontrol play/pause
+* **Pemutaran Audio**: Pemutar audio dengan kontrol play/pause
 * **Manajemen Playlist**: Membuat, melihat, dan menghapus playlist kustom
 * **Sistem Antrean (Queue)**: Menambahkan lagu ke antrean dan menghapus daftar antrian
 * **Favorit**: Menandai dan mengakses lagu favorit dengan cepat
