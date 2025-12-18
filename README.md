@@ -21,15 +21,15 @@ Aplikasi ini mendukung unggahan file audio dan gambar sampul secara langsung, se
 
 * **Pemutaran Audio**: Pemutar audio berbasis HTML5 dengan kontrol play/pause
 * **Manajemen Playlist**: Membuat, melihat, dan menghapus playlist kustom
-* **Sistem Antrean (Queue)**: Menambahkan lagu ke antrean dan mengatur urutan pemutaran
+* **Sistem Antrean (Queue)**: Menambahkan lagu ke antrean dan menghapus daftar antrian
 * **Favorit**: Menandai dan mengakses lagu favorit dengan cepat
 * **Pencarian Lagu**: Menjelajahi seluruh koleksi musik berdasarkan kategori
 * **Sistem History**: Melihat riwayat lagu yang telah diputar
 
 ### Untuk Admin
 
-* **Unggah File**: Unggah langsung file audio (MP3, WAV, OGG, FLAC, M4A)
-* **Unggah Sampul Album**: Unggah gambar sampul (JPG, PNG, GIF, WebP)
+* **Unggah File**: Unggah langsung file audio (MP3)
+* **Unggah Sampul Album**: Unggah gambar sampul (JPG)
 * **Manajemen Lagu**: Tambah, ubah, dan hapus lagu beserta metadata lengkap
 * **Validasi File**: Validasi otomatis tipe dan ukuran file
 * **Sistem Edit**: Edit lagu yang telah di upload
