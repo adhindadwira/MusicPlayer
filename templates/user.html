@@ -533,6 +533,76 @@ async function loadFavorites() {
   } catch (error) { console.error('Error loading favorites:', error); }
 }
 
+function displayFavorites() {
+  const grid = document.getElementById('songsGrid');
+  grid.style.display = 'grid';
+  
+  if (!favorites || favorites.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">💔</div>
+        <div class="empty-state-text">No favorite songs yet</div>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = favorites.map(song => `
+    <div class="song-card">
+      <div class="song-cover">
+        ${song.cover_path ? `<img src="${song.cover_path}">` : '♪'}
+      </div>
+      <div class="song-info">
+        <div class="song-title">${escapeHtml(song.title)}</div>
+        <div class="song-artist">${escapeHtml(song.artist)}</div>
+      </div>
+      <div class="song-actions">
+        <button class="btn btn-play" onclick="playSong(${song.id})"
+          ${!song.audio_path || song.audio_path === 'null' ? 'disabled' : ''}>
+          ${song.audio_path && song.audio_path !== 'null' ? 'Play' : 'No Audio'}
+        </button>
+        <button class="btn btn-danger" onclick="removeFavorite(${song.id})">
+          Remove from Favorites
+        </button>
+        <button class="btn btn-queue" onclick="addToQueue(${song.id})">Add to Queue</button>
+        <button class="btn btn-secondary" onclick="openPlaylistModal(${song.id})">Add to Playlist</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function removeFavorite(songId) {
+  if (!confirm('Remove this song from favorites?')) return;
+  
+  try {
+    const response = await fetch(`/api/favorites/${songId}`, { 
+      method: 'DELETE', 
+      credentials: 'include' 
+    });
+    
+    if (response.ok) {
+      await loadFavorites();
+      
+      if (currentSection === 'favorites') {
+        displayFavorites();
+      }
+      
+      alert('Removed from favorites!');
+      
+      // Refresh stats jika di library
+      if (currentSection === 'library') {
+        loadLibraryStats();
+      }
+    } else {
+      const data = await response.json();
+      alert('Error: ' + (data.error || 'Failed to remove from favorites'));
+    }
+  } catch (error) {
+    console.error('Error removing favorite:', error);
+    alert('Failed to remove from favorites');
+  }
+}
+
 // Load queue
 async function loadQueue() {
   try {
@@ -540,10 +610,11 @@ async function loadQueue() {
     if (!response.ok) throw new Error('Failed to load queue');
     const data = await response.json();
     queue = data.queue || [];
-    if (currentSection === 'queue') displaySongs(queue);
-  } catch (error) { console.error('Error loading queue:', error); }
+    if (currentSection === 'queue') displayQueue();
+  } catch (error) { 
+    console.error('Error loading queue:', error); 
+  }
 }
-
 // Load history
 async function loadHistory() {
   try {
@@ -590,28 +661,67 @@ function displaySongs(songs, playlistName = null) {
 
 
 // Play song
-async function playSong(songId) {
-  const song = allSongs.find(s => s.id === songId) || favorites.find(s => s.id === songId) || queue.find(s => s.id === songId) || history.find(s => s.id === songId);
+// Play song
+async function playSong(songId, fromQueue = false) {
+  const song = allSongs.find(s => s.id === songId) ||
+               favorites.find(s => s.id === songId) ||
+               queue.find(s => s.id === songId) ||
+               history.find(s => s.id === songId);
+
   if (!song) { alert('Song not found'); return; }
-  if (!song.audio_path || song.audio_path === 'null') { alert('This song has no audio file uploaded'); return; }
+  if (!song.audio_path || song.audio_path === 'null') {
+    alert('This song has no audio file uploaded');
+    return;
+  }
 
   currentSong = song;
   document.getElementById('playerTitle').textContent = song.title;
   document.getElementById('playerArtist').textContent = song.artist;
+
   const playerCover = document.getElementById('playerCover');
-  playerCover.innerHTML = (song.cover_path && song.cover_path !== 'null') ? `<img src="${song.cover_path}" alt="${escapeHtml(song.title)}">` : '♪';
+  playerCover.innerHTML = (song.cover_path && song.cover_path !== 'null')
+    ? `<img src="${song.cover_path}" alt="${escapeHtml(song.title)}">`
+    : '♪';
 
   audioPlayer.src = song.audio_path;
   audioPlayer.load();
+
   try {
     await audioPlayer.play();
+
+    // Tambahkan ke history
     await fetch(`/api/history/${songId}`, { method: 'POST', credentials: 'include' });
     loadHistory();
+
+    // ✅ Auto-remove dari queue jika lagu ada di queue
+    const inQueue = queue.find(q => q.id === songId);
+    if (inQueue) {
+      await removeFromQueueSilent(songId);
+    }
+
   } catch (error) {
     console.error('Error playing song:', error);
     alert('Failed to play audio');
   }
 }
+
+// Fungsi silent remove (tanpa alert popup)
+async function removeFromQueueSilent(songId) {
+  try {
+    const response = await fetch(`/api/queue/${songId}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    if (response.ok) {
+      await loadQueue();
+      if (currentSection === 'queue') displayQueue();
+    }
+  } catch (error) {
+    console.error('Error removing from queue silently:', error);
+  }
+}
+
+
 function togglePlayPause() {
   if (!currentSong) { alert('No song selected'); return; }
   if (isPlaying) audioPlayer.pause(); else audioPlayer.play();
@@ -667,34 +777,154 @@ async function toggleFavorite(songId) {
 // Queue
 async function addToQueue(songId) {
   try {
-    const response = await fetch(`/api/queue/${songId}`, { method: 'POST', credentials: 'include' });
+    const response = await fetch(`/api/queue/${songId}`, { 
+      method: 'POST', 
+      credentials: 'include' 
+    });
+    
     if (response.ok) {
+      await loadQueue();
       alert('Added to queue!');
-      loadQueue();
+    } else {
+      const data = await response.json();
+      alert('Error: ' + (data.error || 'Failed to add to queue'));
     }
-  } catch (error) { console.error('Error adding to queue:', error); }
+  } catch (error) { 
+    console.error('Error adding to queue:', error); 
+    alert('Failed to add to queue');
+  }
 }
+
 async function removeFromQueue(songId) {
   try {
-    const response = await fetch(`/api/queue/${songId}`, { method: 'DELETE', credentials: 'include' });
+    const response = await fetch(`/api/queue/${songId}`, { 
+      method: 'DELETE', 
+      credentials: 'include' 
+    });
+    
     if (response.ok) {
       await loadQueue();
-      displaySongs(queue);
+      
+      if (currentSection === 'queue') {
+        displayQueue();
+      }
+      
       alert('Removed from queue!');
+    } else {
+      const data = await response.json();
+      alert('Error: ' + (data.error || 'Failed to remove from queue'));
     }
-  } catch (error) { console.error('Error removing from queue:', error); }
+  } catch (error) {
+    console.error('Error removing from queue:', error);
+    alert('Failed to remove from queue');
+  }
 }
+
 async function clearAllQueue() {
   if (!confirm('Clear all songs from queue?')) return;
+  
   try {
-    const response = await fetch('/api/queue/clear', { method: 'POST', credentials: 'include' });
+    const response = await fetch('/api/queue/clear', { 
+      method: 'POST', 
+      credentials: 'include' 
+    });
+    
     if (response.ok) {
       await loadQueue();
-      displaySongs(queue);
+      displayQueue();
       alert('Queue cleared!');
+    } else {
+      const data = await response.json();
+      alert('Error: ' + (data.error || 'Failed to clear queue'));
     }
-  } catch (error) { console.error('Error clearing queue:', error); }
+  } catch (error) {
+    console.error('Error clearing queue:', error);
+    alert('Failed to clear queue');
+  }
 }
+
+// === PERBAIKAN DISPLAY QUEUE ===
+function displayQueue() {
+  const grid = document.getElementById('songsGrid');
+  grid.style.display = 'grid';
+  
+  if (!queue || queue.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-text">Queue is empty. Add songs to queue!</div>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = `
+    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+      <button class="btn btn-play" onclick="playFromQueue()">Play First Song</button>
+      <button class="clear-queue-btn" onclick="clearAllQueue()">Clear All Queue</button>
+    </div>
+    ${queue.map((song, index) => `
+      <div class="song-card">
+        <div class="song-cover">
+          ${song.cover_path ? `<img src="${song.cover_path}">` : '♪'}
+        </div>
+        <div class="song-info">
+          <div class="song-title">${escapeHtml(song.title)}</div>
+          <div class="song-artist">${escapeHtml(song.artist)}</div>
+          <div class="song-artist" style="color: var(--accent); font-size: 12px;">
+            #${index + 1} in queue
+          </div>
+        </div>
+        <div class="song-actions">
+          <button class="btn btn-play" onclick="playSong(${song.id})">Play Now</button>
+          <button class="btn btn-danger" onclick="removeFromQueue(${song.id})">Remove</button>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+// === FUNGSI PLAY FROM QUEUE ===
+async function playFromQueue() {
+  if (!queue || queue.length === 0) {
+    alert('Queue is empty!');
+    return;
+  }
+  
+  const firstSong = queue[0];
+  await playSong(firstSong.id);
+  
+  // Hapus dari queue setelah diputar
+  await removeFromQueue(firstSong.id);
+}
+
+// === PERBAIKAN REMOVE FROM QUEUE ===
+async function removeFromQueue(songId) {
+  try {
+    const response = await fetch(`/api/queue/${songId}`, { 
+      method: 'DELETE', 
+      credentials: 'include' 
+    });
+    
+    if (response.ok) {
+      await loadQueue();
+      
+      if (currentSection === 'queue') {
+        displayQueue();
+      }
+      
+      alert('Removed from queue!');
+    } else {
+      const data = await response.json();
+      alert('Error: ' + (data.error || 'Failed to remove from queue'));
+    }
+  } catch (error) {
+    console.error('Error removing from queue:', error);
+    alert('Failed to remove from queue');
+  }
+}
+
+
 
 // Section switcher
 function showSection(section) {
@@ -702,7 +932,7 @@ function showSection(section) {
   document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
   event.target.classList.add('active');
 
-  hideAllSections(); // sembunyikan semua dulu
+  hideAllSections();
 
   const titleMap = {
     'home': 'Home',
@@ -717,23 +947,20 @@ function showSection(section) {
   if (section === 'home') {
     document.getElementById('homeRecommendations').style.display = 'block';
     document.getElementById('homeAlbums').style.display = 'block';
-    
-    // ✅ Tampilkan albums langsung dari allSongs yang sudah dimuat
     displayAlbums(aggregateAlbums(allSongs));
     loadRecommendations();
-    
   } else if (section === 'library') {
     document.getElementById('libraryStats').style.display = 'block';
     loadLibraryStats();
   } else if (section === 'favorites') {
     document.getElementById('songsGrid').style.display = 'grid';
-    loadFavorites().then(() => displaySongs(favorites));
+    loadFavorites().then(() => displayFavorites());
   } else if (section === 'playlists') {
     document.getElementById('songsGrid').style.display = 'grid';
     displayPlaylistsView();
   } else if (section === 'queue') {
     document.getElementById('songsGrid').style.display = 'grid';
-    displaySongs(queue);
+    displayQueue(); // Gunakan fungsi displayQueue khusus
   } else if (section === 'history') {
     document.getElementById('songsGrid').style.display = 'grid';
     displaySongs(history);
